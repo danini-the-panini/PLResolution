@@ -18,6 +18,7 @@ end
 
 def clause?(input)
   terms = split_clause(bstrip(input))
+  return false if terms.nil?
   terms.each_with_index do |string, i|
     if i.even? then
       return false unless literal?(string)
@@ -31,6 +32,7 @@ end
 def pl?(input)
   input = input[1..-1] while input =~ /^-+\(/
   terms = split_clause(bstrip(input))
+  return false if terms.nil?
   return false unless terms.length.odd?
   return term?(terms.first) if terms.length == 1
   terms.each_with_index do |string, i|
@@ -66,13 +68,14 @@ def op?(input)
 end
 
 def bstrip(input) # if any
+  return nil if input.nil?
   input.strip!
   if input.start_with?('(') then
     i = matching_bracket(input, 0)
     if i == input.length-1 then
       input = input[1..-2] # trim off outer backets
     elsif i == input.length then
-      error # unmatched left parenthesis
+      return nil # unmatched left parenthesis
     end
   end
   input
@@ -99,6 +102,7 @@ end
 # splits on 'v' or '&', but not within nested brackets
 # returns delimiters
 def split_clause(input)
+  return nil if input.nil?
   strings = []
   word = ''
   level = 0
@@ -121,7 +125,7 @@ def split_clause(input)
     else
       word += c
     end
-    error if level < 0 # unmatched right parenthesis
+    return nil if level < 0 # unmatched right parenthesis
   end
   strings.push(word)
 end
