@@ -1,8 +1,26 @@
-require 'rubygems'
-require 'debugger'
+def horn?(input)
+  return false unless cnf?(input)
+  split_clause(bstrip(input)).each_with_index do |string, i|
+    if i.even?
+      return false unless horn_clause(string)
+    end
+  end
+  true
+end
 
-def cnf?(input) input.strip!
-  error unless pl?(input)
+def horn_clause?(input)
+  return false unless clause?(input)
+  pos_count = 0
+  terms.each_with_index do |string, i|
+    if i.even? and pos?(string) then
+       pos_count += 1
+    end
+  end
+  pos_count <= 1
+end
+
+def cnf?(input)
+  return false unless pl?(input)
   input = bstrip(input)
   clauses = split_clause(input)
   return clause?(input) unless clauses.include?('&')
@@ -30,6 +48,7 @@ def clause?(input)
 end
 
 def pl?(input)
+  input.strip!
   input = input[1..-1] while input =~ /^-+\(/
   terms = split_clause(bstrip(input))
   return false if terms.nil?
@@ -135,9 +154,3 @@ def error
   puts 'error!'
   #exit(1)
 end
-
-puts 'start'
-
-debugger
-
-puts 'end'
