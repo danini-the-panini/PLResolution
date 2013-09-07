@@ -73,7 +73,7 @@ def bstrip(input) # if any
   if input.start_with?('(') then
     i = matching_bracket(input, 0)
     if i == input.length-1 then
-      input = input[1..-2] # trim off outer backets
+      return bstrip(input[1..-2]) # trim off outer backets
     elsif i == input.length then
       return nil # unmatched left parenthesis
     end
@@ -82,6 +82,7 @@ def bstrip(input) # if any
 end
 
 # finds the right counterpart of a left bracket
+# returns input.length if it coudn't find it
 def matching_bracket(input, index)
   level = 1
   i = index
