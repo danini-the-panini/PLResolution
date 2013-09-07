@@ -1,3 +1,22 @@
+def set_notation(input)
+  return nil unless cnf?(input)
+  return "{#{clause_set(input)}}" if clause?(input)
+  set = '{';
+  split_clause(bstrip(input)).each_with_index do |string, i|
+    set += clause_set(string) if i.even?
+  end
+  set += '}'
+end
+
+def clause_set(input)
+  return nil unless clause?(input)
+  set = '{'
+  split_clause(bstrip(input)).each_with_index do |string, i|
+    set += string if i.even?
+  end
+  set += '}'
+end
+
 def horn?(input)
   return false unless cnf?(input)
   split_clause(bstrip(input)).each_with_index do |string, i|
@@ -21,8 +40,7 @@ end
 
 def cnf?(input)
   return false unless pl?(input)
-  input = bstrip(input)
-  clauses = split_clause(input)
+  clauses = split_clause(bstrip(input))
   return clause?(input) unless clauses.include?('&')
   clauses.each_with_index do |string, i|
     if i.even? then

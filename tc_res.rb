@@ -75,4 +75,20 @@ class TestRes < Test::Unit::TestCase
     assert(!horn?('(-A1vA2vA3)&A1'))
   end
 
+  def test_clause_set
+    assert_equal('{A1}',clause_set('A1'))
+    assert_equal('{A1A2}',clause_set('A1vA2'))
+    assert_nil(clause_set('A1&A2'))
+    assert_nil(clause_set(nil))
+  end
+
+  def test_set_notation
+    assert_equal('{{A1}}',set_notation('A1'))
+    assert_equal('{{A1}{A2}}',set_notation('A1&A2'))
+    assert_equal('{{A1A2}}',set_notation('A1vA2'))
+    assert_equal('{{A1A2}{-A1}{-A2A3}}',set_notation('(A1vA2)&-A1&(-A2vA3)'))
+    assert_nil(set_notation('-A1&(A2v(A3&-A4))'))
+    assert_nil(nil)
+  end
+
 end
