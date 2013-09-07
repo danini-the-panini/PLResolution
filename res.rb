@@ -45,14 +45,15 @@ end
 
 # matches at most 1 negation
 def literal?(input)
+  (input =~ /^-?A[0-9]+$/) === 0
 end
 
 def pos?(input)
-  literal?(input) and input.start_with('A')
+  literal?(input) && input.start_with?('A')
 end
 
 def neg?(input)
-  literal?(input) and start_with('-')
+  literal?(input) && input.start_with?('-')
 end
 
 def op?(input)
