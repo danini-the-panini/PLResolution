@@ -1,6 +1,8 @@
 def cnf?(input) input.strip!
   error unless pl?(input)
-  clauses = split_clause(remove_outer_brackets(input.strip))
+  input = bstrip(input)
+  clauses = split_clause(input)
+  return clause?(input) unless clauses.include?('&')
   clauses.each_with_index do |string, i|
     if i.even? then
       return false unless clause?(string)
@@ -12,7 +14,7 @@ def cnf?(input) input.strip!
 end
 
 def clause?(input)
-  terms = split_clause(remove_outer_brackets(input.strip))
+  terms = split_clause(bstrip(input))
   terms.each_with_index do |string, i|
     if i.even? then
       return false unless literal?(string)
@@ -25,7 +27,7 @@ end
 
 def pl?(input)
   input = input[1..-1] while input =~ /^-+\(/
-  terms = split_clause(remove_outer_brackets(input.strip))
+  terms = split_clause(bstrip(input))
   return false unless terms.length.odd?
   return term?(terms.first) if terms.length == 1
   terms.each_with_index do |string, i|
@@ -60,7 +62,8 @@ def op?(input)
   ['v','&'].include?(input)
 end
 
-def remove_outer_brackets(input) # if any
+def bstrip(input) # if any
+  input.strip!
   if input.start_with?('(') then
     i = matching_bracket(input, 0)
     if i == input.length-1 then
