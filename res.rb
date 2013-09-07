@@ -1,123 +1,3 @@
-def set_notation(input)
-  return nil unless cnf?(input)
-  return "{#{clause_set(input)}}" if clause?(input)
-  set = '{';
-  split_clause(bstrip(input)).each_with_index do |string, i|
-    set += clause_set(string) if i.even?
-  end
-  set += '}'
-end
-
-def clause_set(input)
-  return nil unless clause?(input)
-  set = '{'
-  split_clause(bstrip(input)).each_with_index do |string, i|
-    set += string if i.even?
-  end
-  set += '}'
-end
-
-def horn?(input)
-  return false unless cnf?(input)
-  split_clause(bstrip(input)).each_with_index do |string, i|
-    if i.even?
-      return false unless horn_clause?(string)
-    end
-  end
-  true
-end
-
-def horn_clause?(input)
-  return false unless clause?(input)
-  pos_count = 0
-  split_clause(bstrip(input)).each_with_index do |string, i|
-    if i.even? and pos?(string) then
-       pos_count += 1
-    end
-  end
-  pos_count <= 1
-end
-
-def cnf?(input)
-  return false unless pl?(input)
-  clauses = split_clause(bstrip(input))
-  return clause?(input) unless clauses.include?('&')
-  clauses.each_with_index do |string, i|
-    if i.even? then
-      return false unless clause?(string)
-    else
-      return false unless string == '&'
-    end
-  end
-  true
-end
-
-def clause?(input)
-  terms = split_clause(bstrip(input))
-  return false if terms.nil?
-  terms.each_with_index do |string, i|
-    if i.even? then
-      return false unless literal?(string)
-    else
-      return false unless string == 'v'
-    end
-  end
-  true
-end
-
-def pl?(input)
-  input.strip!
-  input = input[1..-1] while input =~ /^-+\(/
-  terms = split_clause(bstrip(input))
-  return false if terms.nil?
-  return false unless terms.length.odd?
-  return term?(terms.first) if terms.length == 1
-  terms.each_with_index do |string, i|
-    if i.even? then
-      return false unless pl?(string)
-    else
-      return false unless op?(string)
-    end
-  end
-  true
-end
-
-# matches any number of negations
-def term?(input)
-  (input =~ /^-*A[0-9]+$/) === 0
-end
-
-# matches at most 1 negation
-def literal?(input)
-  (input =~ /^-?A[0-9]+$/) === 0
-end
-
-def pos?(input)
-  literal?(input) && input.start_with?('A')
-end
-
-def neg?(input)
-  literal?(input) && input.start_with?('-')
-end
-
-def op?(input)
-  ['v','&'].include?(input)
-end
-
-def bstrip(input) # if any
-  return nil if input.nil?
-  input.strip!
-  if input.start_with?('(') then
-    i = matching_bracket(input, 0)
-    if i == input.length-1 then
-      return bstrip(input[1..-2]) # trim off outer backets
-    elsif i.nil? then
-      return nil # unmatched left parenthesis
-    end
-  end
-  input
-end
-
 # finds the right counterpart of a left bracket
 # returns input.length if it coudn't find it
 def matching_bracket(input, index)
@@ -138,6 +18,20 @@ def matching_bracket(input, index)
   end
   return nil if i == input.length
   i
+end
+
+def bstrip(input) # if any
+  return nil if input.nil?
+  input.strip!
+  if input.start_with?('(') then
+    i = matching_bracket(input, 0)
+    if i == input.length-1 then
+      return bstrip(input[1..-2]) # trim off outer backets
+    elsif i.nil? then
+      return nil # unmatched left parenthesis
+    end
+  end
+  input
 end
 
 # splits on 'v' or '&', but not within nested brackets
@@ -171,7 +65,110 @@ def split_clause(input)
   strings.push(word)
 end
 
-def error
-  puts 'error!'
-  #exit(1)
+# matches any number of negations
+def term?(input)
+  (input =~ /^-*A[0-9]+$/) === 0
 end
+
+# matches at most 1 negation
+def literal?(input)
+  (input =~ /^-?A[0-9]+$/) === 0
+end
+
+def pos?(input)
+  literal?(input) && input.start_with?('A')
+end
+
+def neg?(input)
+  literal?(input) && input.start_with?('-')
+end
+
+def op?(input)
+  ['v','&'].include?(input)
+end
+
+def pl?(input)
+  input.strip!
+  input = input[1..-1] while input =~ /^-+\(/
+  terms = split_clause(bstrip(input))
+  return false if terms.nil?
+  return false unless terms.length.odd?
+  return term?(terms.first) if terms.length == 1
+  terms.each_with_index do |string, i|
+    if i.even? then
+      return false unless pl?(string)
+    else
+      return false unless op?(string)
+    end
+  end
+  true
+end
+
+def clause?(input)
+  terms = split_clause(bstrip(input))
+  return false if terms.nil?
+  terms.each_with_index do |string, i|
+    if i.even? then
+      return false unless literal?(string)
+    else
+      return false unless string == 'v'
+    end
+  end
+  true
+end
+
+def cnf?(input)
+  return false unless pl?(input)
+  clauses = split_clause(bstrip(input))
+  return clause?(input) unless clauses.include?('&')
+  clauses.each_with_index do |string, i|
+    if i.even? then
+      return false unless clause?(string)
+    else
+      return false unless string == '&'
+    end
+  end
+  true
+end
+
+def horn_clause?(input)
+  return false unless clause?(input)
+  pos_count = 0
+  split_clause(bstrip(input)).each_with_index do |string, i|
+    if i.even? and pos?(string) then
+       pos_count += 1
+    end
+  end
+  pos_count <= 1
+end
+
+def horn?(input)
+  return false unless cnf?(input)
+  split_clause(bstrip(input)).each_with_index do |string, i|
+    if i.even?
+      return false unless horn_clause?(string)
+    end
+  end
+  true
+end
+
+def clause_set(input)
+  return nil unless clause?(input)
+  set = '{'
+  split_clause(bstrip(input)).each_with_index do |string, i|
+    set += string if i.even?
+  end
+  set += '}'
+end
+
+def set_notation(input)
+  return nil unless cnf?(input)
+  return "{#{clause_set(input)}}" if clause?(input)
+  set = '{';
+  split_clause(bstrip(input)).each_with_index do |string, i|
+    set += clause_set(string) if i.even?
+  end
+  set += '}'
+end
+
+

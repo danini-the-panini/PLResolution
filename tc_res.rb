@@ -90,5 +90,13 @@ class TestRes < Test::Unit::TestCase
     assert_nil(set_notation('-A1&(A2v(A3&-A4))'))
     assert_nil(nil)
   end
+  
+  def test_sld_res
+    assert(sld_res?('{{A1-A2}{A2}}','-A1'))
+    assert(sld_res?('{{A1-A2-A3}{A2-A4}{A1-A4-A5}{A5-A6}{A4}{A6}}','-A1'))
+    assert(!sld_res?('{{A1-A3}{A2}}','-A1'))
+    assert(!sld_res?('{{A1-A2-A3}{A2-A4}{A1-A4-A5}{A5-A6}{A6}}','-A1'))
+    assert_nil(sld_res?('{A1}','A1'))
+  end
 
 end
