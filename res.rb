@@ -1,3 +1,6 @@
+require 'rubygems'
+require 'debugger'
+
 def cnf?(input) input.strip!
   error unless pl?(input)
   input = bstrip(input)
@@ -127,3 +130,9 @@ def error
   puts 'error!'
   #exit(1)
 end
+
+puts 'start'
+
+debugger
+
+puts 'end'
