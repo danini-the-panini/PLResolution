@@ -2,7 +2,7 @@ def horn?(input)
   return false unless cnf?(input)
   split_clause(bstrip(input)).each_with_index do |string, i|
     if i.even?
-      return false unless horn_clause(string)
+      return false unless horn_clause?(string)
     end
   end
   true
@@ -11,7 +11,7 @@ end
 def horn_clause?(input)
   return false unless clause?(input)
   pos_count = 0
-  terms.each_with_index do |string, i|
+  split_clause(bstrip(input)).each_with_index do |string, i|
     if i.even? and pos?(string) then
        pos_count += 1
     end
@@ -93,7 +93,7 @@ def bstrip(input) # if any
     i = matching_bracket(input, 0)
     if i == input.length-1 then
       return bstrip(input[1..-2]) # trim off outer backets
-    elsif i == input.length then
+    elsif i.nil? then
       return nil # unmatched left parenthesis
     end
   end
@@ -103,6 +103,8 @@ end
 # finds the right counterpart of a left bracket
 # returns input.length if it coudn't find it
 def matching_bracket(input, index)
+  return nil if input.nil? or index.nil?
+  return nil unless index >= 0 and index < input.length
   level = 1
   i = index
   while (level > 0) do
@@ -116,6 +118,7 @@ def matching_bracket(input, index)
       level = 0
     end
   end
+  return nil if i == input.length
   i
 end
 
