@@ -67,12 +67,12 @@ end
 
 # matches any number of negations
 def term?(input)
-  (input =~ /^-*A[0-9]+$/) === 0
+  (input =~ /^-*A\d+$/) === 0
 end
 
 # matches at most 1 negation
 def literal?(input)
-  (input =~ /^-?A[0-9]+$/) === 0
+  (input =~ /^-?A\d+$/) === 0
 end
 
 def pos?(input)
@@ -171,4 +171,37 @@ def set_notation(input)
   set += '}'
 end
 
+def valid_query?(input)
+  (input =~ /^{(-?A\d+)*}$/) == 0
+end
 
+def valid_goal?(input)
+  (input =~ /^{(-A\d+)*}$/) == 0
+end
+
+def neg_only(input)
+  nil if input.nil?
+  input.scan(/-A\d+/).join
+end
+
+def sld_res?(input, goal)
+  puts "#{input} -> #{goal}"
+  return nil if input.nil? or goal.nil?
+  return nil unless valid_goal?(goal)
+
+  # for each goal literal
+  goal.scan(/-A\d+/) do |neg|
+    pos = neg[1..-1]
+
+    # for each clause
+    input.scan(/[^{}]+/) do |clause|
+      if clause.scan(/-?A\d+/).include?(pos) then
+        new_goal = goal.sub(neg,neg_only(clause))
+        puts "\tsub-goal  => #{new_goal}"
+        return true if sld_res?(input, new_goal)
+        puts 'Backtracking'
+      end
+    end
+  end
+  return goal.eql? '{}'
+end

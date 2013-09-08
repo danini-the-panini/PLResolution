@@ -92,11 +92,15 @@ class TestRes < Test::Unit::TestCase
   end
   
   def test_sld_res
-    assert(sld_res?('{{A1-A2}{A2}}','-A1'))
-    assert(sld_res?('{{A1-A2-A3}{A2-A4}{A1-A4-A5}{A5-A6}{A4}{A6}}','-A1'))
-    assert(!sld_res?('{{A1-A3}{A2}}','-A1'))
-    assert(!sld_res?('{{A1-A2-A3}{A2-A4}{A1-A4-A5}{A5-A6}{A6}}','-A1'))
-    assert_nil(sld_res?('{A1}','A1'))
+    assert(sld_res?('{{A1-A2}}','{}'),'Trivial sld failure')
+    assert(sld_res?('{{A1-A2}{A2}}','{-A1}'),'Basic sld failure')
+    assert(sld_res?('{{A1-A3}{A2-A4}{A1-A4-A5}{A5-A6}{A4}{A6}}','{-A1-A2}'),'Fancy sld failure')
+    assert(!sld_res?('{{A1-A3}{A2}}','{-A1}'),'Basic sld false positive')
+    assert(!sld_res?('{{A1-A3}{A2-A4}{A1-A4-A5}{A5-A6}{A4}}','{-A1-A2}'),'Fancy sld false positive')
+    assert_nil(sld_res?('{A1}','{A1}'))
+    assert_nil(sld_res?(nil,'{A1}'))
+    assert_nil(sld_res?('{A1}',nil))
+    assert_nil(sld_res?(nil,nil))
   end
 
 end
