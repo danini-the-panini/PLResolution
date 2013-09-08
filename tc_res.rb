@@ -1,5 +1,6 @@
 require './res'
 require 'test/unit'
+require 'set'
 
 class TestRes < Test::Unit::TestCase
 
@@ -101,6 +102,54 @@ class TestRes < Test::Unit::TestCase
     assert_nil(sld_res?(nil,'{A1}'))
     assert_nil(sld_res?('{A1}',nil))
     assert_nil(sld_res?(nil,nil))
+  end
+
+  def test_contains
+    assert(contains?('{{A1}{A2}}',Set.new(['A1'])))
+    assert(contains?('{{A1A2-A3}{A2-A1A3}}',Set.new(['A1','-A3','A2'])))
+    assert(!contains?('{{A1}{A2}}',Set.new(['-A1'])))
+    assert(!contains?('{{A1A2-A3}{A2-A1A3}}',Set.new(['A1','-A3'])))
+  end
+
+  def test_union_back
+    assert_equal('{{A1}{A2}}',union_back('{{A1}}',Set.new(['A2'])))
+    assert_equal('{{A1}{A2}}',union_back('{{A1}{A2}}',Set.new(['A2'])))
+  end
+
+  def test_union_front
+    assert_equal('{{A2}{A1}}',union_front('{{A1}}',Set.new(['A2'])))
+    assert_equal('{{A1}{A2}}',union_front('{{A1}{A2}}',Set.new(['A2'])))
+  end
+
+  def test_neg
+    assert_equal('-A1',neg('A1'))
+    assert_equal('-A1',neg('-A1'))
+  end
+
+  def test_pos
+    assert_equal('A1',pos('-A1'))
+    assert_equal('A1',pos('A1'))
+  end
+
+  def test_tautology
+    assert(tautology?(Set.new ['A1','-A1']))
+    assert(tautology?(Set.new ['A1','-A2','A2']))
+    assert(!tautology?(Set.new ['A1','-A2']))
+  end
+
+  def test_gen_res
+    assert(gen_res?('{{-A1}{A1}}'),'Trivial gen failure')
+    assert(gen_res?('{{-A1A2A3}{A1A2}{-A2}{-A3}}'),'Basic gen failure')
+    assert(gen_res?('{{-A1A2A3}{A1A2}{-A2}{-A3A2}}'),'Fancy gen failure')
+    assert(gen_res?('{{A1-A2A3}{A2-A3}{-A1A4}{-A4}{A2}{-A3}}'), 'Tautology gen failure')
+    assert(gen_res?('{{A1-A2A3}{A2A3}{-A3}{-A1}}'), 'Duplicate gen failure')
+    assert(!gen_res?('{{-A1}{A2}}'),'Trivial gen false positive')
+    assert(!gen_res?('{{-A1A2A3}{A1A2}{-A3}}'),'Basic gen false positive')
+    assert(!gen_res?('{{-A1A2A3}{A1A2}{-A3A2}}'),'Fancy gen false positive')
+    assert(!gen_res?('{{A1-A2A3}{A2-A3}{-A1}{-A3}}'), 'Tautology gen false positive')
+    assert(!gen_res?('{{A1-A2A3}{A2-A3}{-A1A4}{-A4}{-A3}}'), 'Tautology gen false positive')
+    assert(!gen_res?('{{A1-A2A3}{A2A3}{-A1}}'), 'Duplicate gen false positive')
+    assert_nil(gen_res?(nil))
   end
 
 end

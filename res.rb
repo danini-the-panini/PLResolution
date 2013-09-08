@@ -1,3 +1,5 @@
+require 'set'
+
 # finds the right counterpart of a left bracket
 # returns input.length if it coudn't find it
 def matching_bracket(input, index)
@@ -171,7 +173,7 @@ def set_notation(input)
   set += '}'
 end
 
-def valid_query?(input)
+def valid_clause?(input)
   (input =~ /^{(-?A\d+)*}$/) == 0
 end
 
@@ -184,6 +186,9 @@ def neg_only(input)
   input.scan(/-A\d+/).join
 end
 
+$LIT = /-?A\d+/
+$CLAUSE = /[^{}]+/
+
 def sld_res?(input, goal)
   puts "#{input} -> #{goal}"
   return nil if input.nil? or goal.nil?
@@ -194,8 +199,8 @@ def sld_res?(input, goal)
     pos = neg[1..-1]
 
     # for each clause
-    input.scan(/[^{}]+/) do |clause|
-      if clause.scan(/-?A\d+/).include?(pos) then
+    input.scan($CLAUSE) do |clause|
+      if clause.scan($LIT).include?(pos) then
         new_goal = goal.sub(neg,neg_only(clause))
         puts "\tsub-goal  => #{new_goal}"
         return true if sld_res?(input, new_goal)
@@ -204,4 +209,64 @@ def sld_res?(input, goal)
     end
   end
   return goal.eql? '{}'
+end
+
+def contains?(input,set)
+  input.scan($CLAUSE) do |clause|
+    return true if clause.scan($LIT).to_set == set
+  end
+  false
+end
+
+def union_back(input,set)
+  return input if contains?(input,set)
+  "{#{input[1..-2]}{#{set.to_a.join}}}"
+end
+
+def union_front(input,set)
+  return input if contains?(input,set)
+  "{{#{set.to_a.join}}#{input[1..-2]}}"
+end
+
+def pos(input)
+  return input[1..-1] if neg?(input)
+  input
+end
+
+def neg(input)
+  return '-'+input if pos?(input)
+  input
+end
+
+def tautology?(set)
+  set.each do |x|
+    return true if neg?(x) and set.include?(pos(x))
+  end
+  false
+end
+
+def gen_res?(input)
+  puts "#{input}"
+  return nil if input.nil?
+  clauses = input.scan($CLAUSE)
+  clauses[0..-2].each_with_index do |a, i|
+    clauses[i+1..-1].each do |b|
+      next if a == b
+      puts "Comparing #{a} with #{b}"
+      c1 = a.scan($LIT)
+      c2 = b.scan($LIT)
+      c1.each do |l1|
+        c2.each do |l2|
+          next if neg?(l1) == neg?(l2) or pos(l1) != pos(l2)
+          puts "\t\tResolve on #{pos(l1)}"
+          r = Set.new
+          r += c1 - [l1]
+          r += c2 - [l2]
+          return true if r.empty?
+          return gen_res?(union_front(input,r)) unless tautology?(r) or contains?(input,r)
+        end
+      end
+    end
+  end
+  false
 end
