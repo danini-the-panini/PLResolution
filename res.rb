@@ -168,14 +168,21 @@ def horn_clause? input
   pos_count <= 1
 end
 
+def goal_clause? input
+  return false unless clause? input
+
+  split_clause(bstrip(input)).each_with_index do |token, i|
+    return false if i.even? and pos? token
+  end
+  true
+end
+
 # true if the input is a horn formula (conjunction of horn clauses)
 def horn? input
   return false unless cnf? input
 
   split_clause(bstrip(input)).each_with_index do |token, i|
-    if i.even?
-      return false unless horn_clause? token
-    end
+    return false unless horn_clause? token if i.even?
   end
   true
 end
@@ -201,16 +208,6 @@ def clause_set input
   set += '}'
 end
 
-# true if the input represents a valid clause (as a set of literals)
-def valid_clause? input
-  (input =~ /^{(-?A\d+)*}$/) == 0
-end
-
-# true if the input represents a valid SLD goal
-def valid_goal? input
-  (input =~ /^{(-A\d+)*}$/) == 0
-end
-
 # returns input with all positive literals removed
 def neg_only input
   nil if input.nil?
@@ -224,7 +221,6 @@ $CLAUSE = /[^{}]+/
 def sld_res? input, goal
   puts "#{input} -> #{goal}"
   return nil if input.nil? or goal.nil?
-  return nil unless valid_goal? goal
 
   # for each goal literal
   goal.scan $LIT do |neg|
@@ -321,3 +317,5 @@ def gen_res? input
   end
   false
 end
+
+
