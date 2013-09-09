@@ -28,21 +28,25 @@ class TestRes < Test::Unit::TestCase
     assert_nil(bstrip(nil))
   end
 
+  def test_pl
+    assert(pl?('A1'))
+    assert(pl?('A1vA2&A3'))
+    assert(pl?('(A1vA2)&A3'))
+    assert(pl?('-(-(-(A1)))'))
+    assert(!pl?('A1v'))
+    assert(!pl?('vA1'))
+    assert(!pl?('A1A2'))
+    assert(!pl?('A3&(A1vA2'))
+    assert(!pl?('(A1vA2'))
+    assert(!pl?('A1vA2)'))
+    assert(!pl?('A1vA2)&A3'))
+  end
+
   def test_clause
     assert(clause?('A1vA2vA3'))
     assert(!clause?('A1vA2&A3'))
     assert(!clause?('A1v(A2vA3)'))
     assert(!clause(nil))
-  end
-
-  def test_pl
-    assert(pl?('A1'))
-    assert(pl?('A1vA2&A3'))
-    assert(pl?('(A1vA2)&A3'))
-    assert(!pl?('A1v'))
-    assert(!pl?('vA1'))
-    assert(!pl?('A3&(A1vA2'))
-    assert(!pl?('A1vA2)&A3'))
   end
 
   def test_clause
@@ -62,6 +66,7 @@ class TestRes < Test::Unit::TestCase
     assert(!cnf?('-(A1vA2)'))
     assert(!cnf?('(A1&A2)vA3'))
     assert(!cnf?('A1&(A2v(A3&A4))'))
+    assert(!cnf?('-(-(-(A1)))'))
   end
 
   def test_horn_clause
@@ -76,19 +81,19 @@ class TestRes < Test::Unit::TestCase
     assert(!horn?('(-A1vA2vA3)&A1'))
   end
 
-  def test_clause_set
-    assert_equal('{A1}',clause_set('A1'))
-    assert_equal('{A1A2}',clause_set('A1vA2'))
-    assert_nil(clause_set('A1&A2'))
-    assert_nil(clause_set(nil))
+  def test_literal_set
+    assert_equal('{A1}',literal_set('A1'))
+    assert_equal('{A1A2}',literal_set('A1vA2'))
+    assert_nil(literal_set('A1&A2'))
+    assert_nil(literal_set(nil))
   end
 
-  def test_set_notation
-    assert_equal('{{A1}}',set_notation('A1'))
-    assert_equal('{{A1}{A2}}',set_notation('A1&A2'))
-    assert_equal('{{A1A2}}',set_notation('A1vA2'))
-    assert_equal('{{A1A2}{-A1}{-A2A3}}',set_notation('(A1vA2)&-A1&(-A2vA3)'))
-    assert_nil(set_notation('-A1&(A2v(A3&-A4))'))
+  def test_clause_set
+    assert_equal('{{A1}}',clause_set('A1'))
+    assert_equal('{{A1}{A2}}',clause_set('A1&A2'))
+    assert_equal('{{A1A2}}',clause_set('A1vA2'))
+    assert_equal('{{A1A2}{-A1}{-A2A3}}',clause_set('(A1vA2)&-A1&(-A2vA3)'))
+    assert_nil(clause_set('-A1&(A2v(A3&-A4))'))
     assert_nil(nil)
   end
   
